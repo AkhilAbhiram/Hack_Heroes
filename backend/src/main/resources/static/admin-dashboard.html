@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Order Management System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="logo">⚙️ OrderHub - Admin Panel</h1>
+            <ul class="nav-menu">
+                <li><a href="#" onclick="showSection('dashboard')">Dashboard</a></li>
+                <li><a href="#" onclick="showSection('products')">Inventory</a></li>
+                <li><a href="#" onclick="showSection('orders')">Orders</a></li>
+                <li><a href="#" onclick="showSection('users')">Users</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="user-info">
+                <h3 id="userEmail"></h3>
+                <p class="user-role">⚙️ Admin Account</p>
+            </div>
+            <div class="admin-stats">
+                <h4>Quick Stats</h4>
+                <div class="stat-line">
+                    <span>Total Products:</span>
+                    <span id="totalProducts" style="font-weight: bold;">0</span>
+                </div>
+                <div class="stat-line">
+                    <span>Total Orders:</span>
+                    <span id="totalOrders" style="font-weight: bold;">0</span>
+                </div>
+                <div class="stat-line">
+                    <span>Total Users:</span>
+                    <span id="totalUsers" style="font-weight: bold;">0</span>
+                </div>
+            </div>
+        </div>
+
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section active">
+                <h2>Admin Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>📦 Products</h3>
+                        <p id="dashProductCount" class="stat-value">0</p>
+                        <p class="stat-label">Total Products</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>🛒 Orders</h3>
+                        <p id="dashOrderCount" class="stat-value">0</p>
+                        <p class="stat-label">Total Orders</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>👥 Users</h3>
+                        <p id="dashUserCount" class="stat-value">0</p>
+                        <p class="stat-label">Registered Users</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>📊 Pending Orders</h3>
+                        <p id="dashPendingCount" class="stat-value">0</p>
+                        <p class="stat-label">Awaiting Processing</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Inventory/Products Section -->
+            <section id="products" class="section">
+                <h2>Inventory Management</h2>
+                
+                <div class="section-controls">
+                    <button class="btn btn-primary" onclick="showAddProductForm()">+ Add New Product</button>
+                </div>
+
+                <!-- Add Product Form -->
+                <div id="addProductForm" class="form-modal" style="display: none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeAddProductForm()">&times;</span>
+                        <h3>Add New Product</h3>
+                        <form onsubmit="handleAddProduct(event)">
+                            <div class="form-group">
+                                <label for="productName">Product Name:</label>
+                                <input type="text" id="productName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="productCategory">Category:</label>
+                                <input type="text" id="productCategory" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="productPrice">Price:</label>
+                                <input type="number" id="productPrice" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="productStock">Stock Quantity:</label>
+                                <input type="number" id="productStock" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="productBrand">Brand:</label>
+                                <input type="text" id="productBrand" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Product</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Update Stock Form -->
+                <div id="updateStockForm" class="form-modal" style="display: none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeUpdateStockForm()">&times;</span>
+                        <h3>Update Stock</h3>
+                        <form onsubmit="handleUpdateStock(event)">
+                            <input type="hidden" id="updateProductId">
+                            <div class="form-group">
+                                <label>Product Name:</label>
+                                <input type="text" id="updateProductName" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Current Stock:</label>
+                                <input type="text" id="updateProductStock" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="updateQuantity">Quantity Change (positive to add, negative to remove):</label>
+                                <input type="number" id="updateQuantity" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Stock</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Products List -->
+                <div class="search-filter" style="margin: 20px 0;">
+                    <input type="text" id="searchProducts" placeholder="Search products..." onkeyup="filterProducts()">
+                </div>
+                <div id="productsList" class="inventory-table">
+                    <p class="loading">Loading products...</p>
+                </div>
+            </section>
+
+            <!-- Orders Section -->
+            <section id="orders" class="section">
+                <h2>Order Management</h2>
+                
+                <div class="filter-group">
+                    <label>Filter by Status:</label>
+                    <select id="orderStatusFilter" onchange="filterOrders()">
+                        <option value="">All Orders</option>
+                        <option value="PLACED">Placed</option>
+                        <option value="PROCESSING">Processing</option>
+                        <option value="SHIPPED">Shipped</option>
+                        <option value="DELIVERED">Delivered</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                </div>
+
+                <!-- Update Order Status Form -->
+                <div id="updateOrderForm" class="form-modal" style="display: none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeUpdateOrderForm()">&times;</span>
+                        <h3>Update Order Status</h3>
+                        <form onsubmit="handleUpdateOrderStatus(event)">
+                            <input type="hidden" id="updateOrderId">
+                            <div class="form-group">
+                                <label>Order ID:</label>
+                                <input type="text" id="updateOrderIdDisplay" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="updateOrderStatus">New Status:</label>
+                                <select id="updateOrderStatus" required>
+                                    <option value="">Select Status</option>
+                                    <option value="PLACED">Placed</option>
+                                    <option value="PROCESSING">Processing</option>
+                                    <option value="SHIPPED">Shipped</option>
+                                    <option value="DELIVERED">Delivered</option>
+                                    <option value="CANCELLED">Cancelled</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Status</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Orders List -->
+                <div id="ordersList" class="orders-table">
+                    <p class="loading">Loading orders...</p>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="users" class="section">
+                <h2>User Management</h2>
+                <div id="usersList" class="users-table">
+                    <p class="loading">Loading users...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="message" class="message"></div>
+    <script src="admin.js"></script>
+</body>
+</html>
